@@ -56,7 +56,8 @@ st.markdown("""
 }
 .metric-value {
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: 800;
+    color: #16a34a;
 }
 </style>
 """, unsafe_allow_html=True)
