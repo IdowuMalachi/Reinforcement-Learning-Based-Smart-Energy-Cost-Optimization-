@@ -40,18 +40,11 @@ def estimate_grid_cost(hour: int, demand_kw: float, action: str, battery_kwh: fl
 
     return grid_usage * price
 
-st.title("⚡ Reinforcement Learning Energy Management Dashboard")
+st.title("RL Energy Management Dashboard")
 
-st.markdown(
-    """
-This dashboard presents a simplified deployment view of the reinforcement learning
-energy management project. It uses:
-- real household demand as the demand signal
-- a simulated battery storage system
-- simulated time-of-use electricity pricing
-
-The goal is to show how intelligent control can reduce electricity cost.
-"""
+st.write(
+    "This dashboard presents a simplified reinforcement learning energy management concept "
+    "using household demand, a simulated battery system, and time-of-use pricing."
 )
 
 st.sidebar.header("Simulation Inputs")
@@ -74,30 +67,30 @@ col4.metric("Demand", f"{demand_kw:.1f} kW")
 st.subheader("Recommended Action")
 
 if action == "Discharge battery":
-    st.error(f"Action: **{action}**")
+    st.error(f"Action: {action}")
 elif action == "Charge battery":
-    st.success(f"Action: **{action}**")
+    st.success(f"Action: {action}")
 else:
-    st.info(f"Action: **{action}**")
+    st.info(f"Action: {action}")
 
-st.write(f"**Estimated one-hour grid cost:** ${estimated_cost:.2f}")
+st.write(f"Estimated one-hour grid cost: ${estimated_cost:.2f}")
 
 st.subheader("Why this action was selected")
 
 if action == "Discharge battery":
     st.write(
-        "The current hour is in a high-price period, and the battery contains enough stored energy. "
-        "The recommended action is to discharge the battery in order to reduce reliance on expensive grid electricity."
+        "The current hour is in a high-price period and the battery has enough stored energy, "
+        "so the recommended action is to discharge the battery."
     )
 elif action == "Charge battery":
     st.write(
-        "The current hour is in a low-price period, and the battery still has available capacity. "
-        "The recommended action is to charge the battery now so that cheaper energy can be used later."
+        "The current hour is in a low-price period and the battery still has available capacity, "
+        "so the recommended action is to charge the battery."
     )
 else:
     st.write(
-        "The current state does not strongly favor charging or discharging. "
-        "The recommended action is to remain idle and meet the demand directly under current conditions."
+        "The current state does not strongly favor charging or discharging, "
+        "so the recommended action is to remain idle."
     )
 
 st.subheader("Tariff Schedule")
@@ -128,9 +121,9 @@ summary_df = pd.DataFrame({
     ]
 })
 
-st.dataframe(summary_df, use_container_width=True, hide_index=True)
+st.dataframe(summary_df, use_container_width=True)
 
 st.caption(
-    "This dashboard is a lightweight presentation and deployment interface. "
-    "It demonstrates the logic of the reinforcement learning energy management project without running full training inside the app."
+    "This is a lightweight presentation dashboard. It explains the reinforcement learning "
+    "energy management concept without running full training inside the app."
 )
