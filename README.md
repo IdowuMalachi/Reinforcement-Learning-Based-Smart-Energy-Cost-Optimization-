@@ -34,3 +34,4 @@ simulated smart energy management environment where:
 ## Streamlit
 Run:
     streamlit run app.py
+    https://53566xkvoxvnxrdc4tzcjy.streamlit.app/ 
