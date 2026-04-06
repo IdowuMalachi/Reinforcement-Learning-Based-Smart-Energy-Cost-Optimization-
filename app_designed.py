@@ -21,29 +21,39 @@ st.set_page_config(
 st.markdown("""
 <style>
 .main {
-    background-color: #f7f9fc;
+    background-color: #020817;
 }
 .block-container {
     padding-top: 1.5rem;
     padding-bottom: 2rem;
 }
 h1, h2, h3 {
-    color: #0f172a;
+    color: #f8fafc;
 }
 .kpi-card {
-    background: white;
+    background: #f8fafc;
     padding: 18px;
     border-radius: 18px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.20);
     text-align: center;
     border-left: 6px solid #2563eb;
+    color: #0f172a;
+}
+.kpi-card h2 {
+    color: #0f172a !important;
+    margin: 0;
+}
+.kpi-card h3 {
+    color: #334155 !important;
+    margin-bottom: 10px;
 }
 .info-card {
-    background: white;
+    background: #ffffff;
     padding: 18px;
     border-radius: 18px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.10);
     margin-bottom: 14px;
+    color: #0f172a;
 }
 .hero {
     background: linear-gradient(135deg, #0f172a, #1d4ed8);
@@ -55,7 +65,7 @@ h1, h2, h3 {
 }
 .small-note {
     font-size: 0.92rem;
-    color: #475569;
+    color: #cbd5e1;
 }
 </style>
 """, unsafe_allow_html=True)
