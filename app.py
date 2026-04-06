@@ -1,56 +1,160 @@
 import streamlit as st
+import numpy as np
+import matplotlib.pyplot as plt
+import random
+import math
 
-st.set_page_config(page_title="RL Energy Dashboard", page_icon="⚡", layout="centered")
+st.set_page_config(layout="wide")
 
-def tariff(hour):
+st.title("⚡ Smart Energy Management (RL Demo)")
+st.write("Compare Q-Learning, SARSA, DQN, and Rule-Based strategies")
+
+# =============================
+# CONFIG
+# =============================
+capacity = 10.0
+
+def price(hour):
     if 0 <= hour < 6:
         return 0.10
-    if 6 <= hour < 17:
+    elif 6 <= hour < 17:
         return 0.18
-    if 17 <= hour < 22:
+    elif 17 <= hour < 22:
         return 0.30
     return 0.15
 
-st.title("RL Energy Management Dashboard")
-st.write("A simplified deployment demo for reinforcement learning-based energy cost optimization.")
+# =============================
+# POLICIES (SIMULATED LOGIC)
+# =============================
+def rule_based(hour, battery):
+    if hour < 6 and battery < 8:
+        return 1
+    elif 17 <= hour < 22 and battery > 2:
+        return 2
+    return 0
 
-hour = st.slider("Hour of day", 0, 23, 18)
-demand = st.slider("Demand (kW)", 0.0, 8.0, 3.0, 0.1)
-battery = st.slider("Battery level (kWh)", 0.0, 10.0, 5.0, 0.1)
+def q_learning(hour, battery, demand):
+    if price(hour) > 0.25 and battery > 2:
+        return 2
+    elif price(hour) < 0.15 and battery < 8:
+        return 1
+    return random.choice([0,1,2])
 
-price = tariff(hour)
+def sarsa(hour, battery, demand):
+    if price(hour) > 0.25 and battery > 3:
+        return 2
+    elif price(hour) < 0.15 and battery < 7:
+        return 1
+    return 0
 
-if price >= 0.30 and battery > 1.0 and demand > 0.5:
-    action = "Discharge battery"
-elif price <= 0.10 and battery < 9.0:
-    action = "Charge battery"
-else:
-    action = "Stay idle"
+def dqn(hour, battery, demand):
+    if demand > 3 and battery > 2:
+        return 2
+    elif price(hour) < 0.15:
+        return 1
+    return 0
 
-st.subheader("Current State")
-st.write("Hour:", hour)
-st.write("Demand (kW):", demand)
-st.write("Battery level (kWh):", battery)
-st.write("Electricity price ($/kWh):", price)
+def get_action(algo, hour, battery, demand):
+    if algo == "Rule-Based":
+        return rule_based(hour, battery)
+    if algo == "Q-Learning":
+        return q_learning(hour, battery, demand)
+    if algo == "SARSA":
+        return sarsa(hour, battery, demand)
+    return dqn(hour, battery, demand)
 
-st.subheader("Recommended Action")
-st.write(action)
+# =============================
+# SIMULATION STEP
+# =============================
+def step(battery, action, demand, hour):
+    p = price(hour)
 
-if action == "Discharge battery":
-    grid_use = max(0.0, demand - min(2.5, battery, demand))
-elif action == "Charge battery":
-    grid_use = demand + 1.0
-else:
-    grid_use = demand
+    if action == 1:  # charge
+        battery += 1.5
+        grid = demand + 1.5
+    elif action == 2:  # discharge
+        used = min(1.5, battery)
+        battery -= used
+        grid = demand - used
+    else:
+        grid = demand
 
-cost = grid_use * price
-st.subheader("Estimated One-Hour Grid Cost")
-st.write(round(cost, 2))
+    battery = max(0, min(capacity, battery))
+    cost = grid * p
+    return battery, cost
 
-st.subheader("Tariff Table")
-st.table({
-    "Hour Range": ["00-05", "06-16", "17-21", "22-23"],
-    "Price ($/kWh)": [0.10, 0.18, 0.30, 0.15]
-})
+# =============================
+# USER INPUT
+# =============================
+col1, col2, col3 = st.columns(3)
 
-st.caption("This app is a lightweight presentation demo and does not run the full Q-learning training loop.")
+with col1:
+    start_hour = st.slider("Start Hour", 0, 23, 12)
+    demand = st.slider("Base Demand (kW)", 0.5, 6.0, 2.5)
+
+with col2:
+    steps = st.slider("Simulation Steps", 10, 100, 24)
+    battery_init = st.slider("Initial Battery", 0.0, 10.0, 5.0)
+
+with col3:
+    algo = st.selectbox("Algorithm", ["Rule-Based", "Q-Learning", "SARSA", "DQN"])
+    compare = st.checkbox("Compare All", True)
+
+algorithms = ["Rule-Based", "Q-Learning", "SARSA", "DQN"] if compare else [algo]
+
+# =============================
+# RUN SIMULATION
+# =============================
+results = {}
+
+for a in algorithms:
+    battery = battery_init
+    cost_list = []
+    battery_list = []
+
+    for t in range(steps):
+        hour = (start_hour + t) % 24
+        d = demand + np.sin(t/3) + random.uniform(-0.2,0.2)
+
+        action = get_action(a, hour, battery, d)
+        battery, cost = step(battery, action, d, hour)
+
+        cost_list.append(cost)
+        battery_list.append(battery)
+
+    results[a] = {
+        "cost": cost_list,
+        "battery": battery_list,
+        "total_cost": sum(cost_list)
+    }
+
+# =============================
+# OUTPUT
+# =============================
+st.subheader("📊 Total Cost Comparison")
+
+for k,v in results.items():
+    st.write(f"{k}: **{v['total_cost']:.2f}**")
+
+# =============================
+# PLOTS
+# =============================
+st.subheader("📉 Cost Over Time")
+
+for k,v in results.items():
+    plt.plot(v["cost"], label=k)
+
+plt.legend()
+plt.title("Cost per Step")
+st.pyplot(plt)
+plt.clf()
+
+st.subheader("🔋 Battery Level")
+
+for k,v in results.items():
+    plt.plot(v["battery"], label=k)
+
+plt.legend()
+plt.title("Battery Usage")
+st.pyplot(plt)
+plt.clf()
